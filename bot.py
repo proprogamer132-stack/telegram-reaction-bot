@@ -6,7 +6,7 @@ import regex as re_lib
 from telegram import Update, ReactionTypeEmoji
 from telegram.ext import Application, MessageHandler, filters, ContextTypes
 
-from config import BOT_TOKEN, DEFAULT_REACTION, MAX_REACTIONS
+from config import BOT_TOKEN, DEFAULT_REACTION, MAX_REACTIONS, WEBHOOK, PORT, RENDER_URL
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -148,7 +148,19 @@ def main():
     ))
 
     logger.info("Bot started")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+
+    if WEBHOOK and RENDER_URL:
+        webhook_url = f"{RENDER_URL}/{BOT_TOKEN}"
+        logger.info("Webhook mode: %s", webhook_url)
+        app.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path=BOT_TOKEN,
+            webhook_url=webhook_url,
+            allowed_updates=Update.ALL_TYPES,
+        )
+    else:
+        app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
